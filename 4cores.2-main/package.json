@@ -1,0 +1,19 @@
+{
+  "name": "4cores",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "dev": "pnpm --filter @4cores/frontend dev",
+    "dev:frontend": "pnpm --filter @4cores/frontend dev",
+    "dev:backend": "pnpm --filter @4cores/backend start:dev",
+    "build:frontend": "pnpm --filter @4cores/frontend build",
+    "build:backend": "pnpm --filter @4cores/backend build",
+    "test:frontend": "pnpm --filter @4cores/frontend test",
+    "test:backend": "pnpm --filter @4cores/backend test",
+    "build": "pnpm -r build",
+    "check": "pnpm -r check",
+    "test": "pnpm -r test",
+    "zip": "python3 gerar_zip.py"
+  }
+}
