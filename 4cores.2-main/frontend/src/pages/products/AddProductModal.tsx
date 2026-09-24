@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -17,7 +17,40 @@ export function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalP
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Comprime e redimensiona a imagem antes de converter para Base64
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800; // Redimensiona para no máximo 800px de largura
+        const scaleFactor = MAX_WIDTH / img.width;
+
+        if (scaleFactor < 1) {
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleFactor;
+        } else {
+          canvas.width = img.width;
+          canvas.height = img.height;
+        }
+
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Exporta como JPEG com qualidade comprimida (0.7 = 70%)
+        const resizedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+        setImage(resizedBase64);
+      };
+    };
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -68,6 +101,7 @@ export function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalP
         alignItems: "center",
         justifyContent: "center",
         zIndex: 1000,
+        padding: "16px",
       }}
     >
       <div
@@ -77,6 +111,8 @@ export function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalP
           padding: "24px",
           width: "100%",
           maxWidth: "480px",
+          maxHeight: "90vh",
+          overflowY: "auto",
           boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
         }}
       >
@@ -156,16 +192,44 @@ export function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalP
 
           <div>
             <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, marginBottom: "4px" }}>
-              URL da Foto (Opcional)
+              Foto do Arquivo
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{
+                width: "100%",
+                padding: "6px 12px",
+                borderRadius: "6px",
+                border: "1px solid #d1d5db",
+                backgroundColor: "#ffffff",
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: "0.75rem", color: "#6b7280", marginBottom: "4px" }}>
+              Ou Cole a URL da Foto (Opcional)
             </label>
             <input
               type="url"
-              value={image}
+              value={image.startsWith("data:") ? "" : image}
               onChange={(e) => setImage(e.target.value)}
               placeholder="https://exemplo.com/imagem.jpg"
               style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
             />
           </div>
+
+          {image && (
+            <div style={{ textAlign: "center", marginTop: "4px" }}>
+              <img
+                src={image}
+                alt="Pré-visualização"
+                style={{ maxHeight: "90px", borderRadius: "6px", objectFit: "contain" }}
+              />
+            </div>
+          )}
 
           <div>
             <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 500, marginBottom: "4px" }}>

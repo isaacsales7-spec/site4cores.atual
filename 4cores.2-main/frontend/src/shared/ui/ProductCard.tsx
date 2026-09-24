@@ -54,8 +54,32 @@ export function ProductCard({ product, onUpdate }: { product: any; onUpdate?: ()
 
   return (
     <article className="product-card">
-      <div className="product-image-wrap">
-        <img src={product.image} alt={product.name} />
+      <div
+        className="product-image-wrap"
+        style={{
+          width: "100%",
+          height: "220px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          backgroundColor: "#f9fafb",
+          position: "relative",
+          borderRadius: "8px 8px 0 0",
+        }}
+      >
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+            width: "auto",
+            height: "auto",
+            objectFit: "contain",
+            padding: "8px",
+          }}
+        />
         <span className="product-badge">{product.badge ?? "Oferta"}</span>
       </div>
       <div className="product-card-body">

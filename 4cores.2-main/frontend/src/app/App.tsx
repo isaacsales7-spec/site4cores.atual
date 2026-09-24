@@ -22,7 +22,7 @@ import {
   UserIcon,
 } from "@/shared/ui/Icons";
 
-type NavigationItem = "home" | "impressoras" | "suprimentos" | "papeis" | "assistencia" | "contato";
+type NavigationItem = "home" | "impressoras" | "suprimentos" | "papeis" | "outros" | "assistencia" | "contato";
 
 const navigationItems: Array<{
   id: NavigationItem;
@@ -33,6 +33,7 @@ const navigationItems: Array<{
   { id: "impressoras", label: "Impressoras", path: "/impressoras" },
   { id: "suprimentos", label: "Suprimentos", path: "/suprimentos" },
   { id: "papeis", label: "Papéis", path: "/papeis" },
+  { id: "outros", label: "Outros", path: "/outros" },
   { id: "assistencia", label: "Assistência", path: "/assistencia" },
   { id: "contato", label: "Contato", path: "/contato" },
 ];
@@ -219,6 +220,10 @@ export function App() {
             <Route
               path="/papeis"
               element={<CatalogPage title="Papéis especiais" category="Papéis" />}
+            />
+            <Route
+              path="/outros"
+              element={<CatalogPage title="Outros Produtos" category="Outros" />}
             />
             <Route path="/assistencia" element={<InfoPage type="assistencia" />} />
             <Route path="/contato" element={<InfoPage type="contato" />} />
