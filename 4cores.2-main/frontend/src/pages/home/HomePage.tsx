@@ -6,6 +6,23 @@ import { ProductCard } from "@/shared/ui/ProductCard";
 export function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productList, setProductList] = useState<any[]>([]);
+  const [isEmployee, setIsEmployee] = useState(false);
+
+  useEffect(() => {
+    // Verifica a permissão do usuário logado no localStorage
+    try {
+      const savedUser = localStorage.getItem("user") || localStorage.getItem("4cores_user");
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+        const role = user?.role?.toUpperCase();
+        setIsEmployee(role === "EMPLOYEE" || role === "ADMIN" || role === "FUNCIONARIO");
+      } else {
+        setIsEmployee(false);
+      }
+    } catch (error) {
+      setIsEmployee(false);
+    }
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -70,14 +87,16 @@ export function HomePage() {
             <a className="button" href="#destaques">
               Comprar agora <ArrowRightIcon size={17} />
             </a>
-            <button
-              type="button"
-              className="button"
-              style={{ backgroundColor: "#4f46e5", borderColor: "#4f46e5" }}
-              onClick={() => setIsModalOpen(true)}
-            >
-              + Adicionar Produto
-            </button>
+            {isEmployee && (
+              <button
+                type="button"
+                className="button"
+                style={{ backgroundColor: "#4f46e5", borderColor: "#4f46e5" }}
+                onClick={() => setIsModalOpen(true)}
+              >
+                + Adicionar Produto
+              </button>
+            )}
           </div>
         </div>
         <div className="hero-dots">
@@ -98,32 +117,34 @@ export function HomePage() {
         <div className="product-grid">
           {featuredProducts.length === 0 ? (
             <p style={{ gridColumn: "1 / -1", color: "#6b7280" }}>
-              Nenhum produto em destaque no momento. Clique em "☆ Adicionar aos destaques" no card de qualquer produto para exibi-lo aqui.
+              Nenhum produto em destaque no momento.
             </p>
           ) : (
             featuredProducts.map((product: any) => (
               <div key={product.id} style={{ position: "relative" }}>
                 <ProductCard product={product} onUpdate={fetchProducts} />
-                <button
-                  type="button"
-                  onClick={() => handleDeleteProduct(product.id)}
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    right: "10px",
-                    backgroundColor: "#dc2626",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "6px",
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    zIndex: 10,
-                  }}
-                >
-                  Excluir
-                </button>
+                {isEmployee && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteProduct(product.id)}
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      right: "10px",
+                      backgroundColor: "#dc2626",
+                      color: "#ffffff",
+                      border: "none",
+                      borderRadius: "6px",
+                      padding: "4px 8px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      zIndex: 10,
+                    }}
+                  >
+                    Excluir
+                  </button>
+                )}
               </div>
             ))
           )}
@@ -131,11 +152,13 @@ export function HomePage() {
       </section>
 
       {/* Modal de cadastro de produto */}
-      <AddProductModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchProducts}
-      />
+      {isEmployee && (
+        <AddProductModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchProducts}
+        />
+      )}
     </div>
   );
 }

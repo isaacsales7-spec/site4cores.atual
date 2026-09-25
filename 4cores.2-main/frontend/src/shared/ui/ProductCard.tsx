@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useCart } from "@/features/cart/CartContext";
-import type { Product } from "@/shared/types/catalog";
 
 export function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -11,11 +10,28 @@ export function ProductCard({ product, onUpdate }: { product: any; onUpdate?: ()
   const [added, setAdded] = useState(false);
   const [isFeatured, setIsFeatured] = useState(Boolean(product.isFeatured));
   const [loading, setLoading] = useState(false);
+  const [isEmployee, setIsEmployee] = useState(false);
 
   // Sincroniza o estado local quando os dados do produto mudam
   useEffect(() => {
     setIsFeatured(Boolean(product.isFeatured));
   }, [product.isFeatured]);
+
+  // Verifica o cargo do usuário no localStorage para controle de acesso
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("user") || localStorage.getItem("4cores_user");
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+        const role = user?.role?.toUpperCase();
+        setIsEmployee(role === "EMPLOYEE" || role === "ADMIN" || role === "FUNCIONARIO");
+      } else {
+        setIsEmployee(false);
+      }
+    } catch (error) {
+      setIsEmployee(false);
+    }
+  }, []);
 
   const handleAdd = () => {
     add(product);
@@ -25,7 +41,6 @@ export function ProductCard({ product, onUpdate }: { product: any; onUpdate?: ()
 
   const handleToggleFeatured = async () => {
     const nextState = !isFeatured;
-    // 1. Muda o estado visual imediatamente para o usuário
     setIsFeatured(nextState);
 
     try {
@@ -39,7 +54,6 @@ export function ProductCard({ product, onUpdate }: { product: any; onUpdate?: ()
           onUpdate();
         }
       } else {
-        // Se o servidor retornar erro, reverte a cor do botão
         setIsFeatured(!nextState);
         alert("Erro ao salvar o destaque no servidor. Verifique o backend.");
       }
@@ -88,23 +102,26 @@ export function ProductCard({ product, onUpdate }: { product: any; onUpdate?: ()
         <strong>{formatCurrency(product.price)}</strong>
         <span className="stock">● Em estoque</span>
 
-        <button
-          type="button"
-          className="button button-small"
-          disabled={loading}
-          style={{
-            backgroundColor: isFeatured ? "#eab308" : "transparent",
-            color: isFeatured ? "#ffffff" : "#374151",
-            borderColor: isFeatured ? "#ca8a04" : "#d1d5db",
-            marginBottom: "8px",
-            width: "100%",
-            fontWeight: "bold",
-            cursor: loading ? "wait" : "pointer",
-          }}
-          onClick={handleToggleFeatured}
-        >
-          {isFeatured ? "★ Em destaque" : "☆ Adicionar aos destaques"}
-        </button>
+        {/* Exibe o botão de alternar destaque APENAS para funcionários e administradores */}
+        {isEmployee && (
+          <button
+            type="button"
+            className="button button-small"
+            disabled={loading}
+            style={{
+              backgroundColor: isFeatured ? "#eab308" : "transparent",
+              color: isFeatured ? "#ffffff" : "#374151",
+              borderColor: isFeatured ? "#ca8a04" : "#d1d5db",
+              marginBottom: "8px",
+              width: "100%",
+              fontWeight: "bold",
+              cursor: loading ? "wait" : "pointer",
+            }}
+            onClick={handleToggleFeatured}
+          >
+            {isFeatured ? "★ Em destaque" : "☆ Adicionar aos destaques"}
+          </button>
+        )}
 
         <button type="button" className="button button-small" onClick={handleAdd}>
           {added ? "Adicionado" : "Adicionar ao carrinho"}
